@@ -166,8 +166,8 @@ initializer initializer1([]()
 shared_ptr<Reader> getResourceReader(wstring resource)
 {
     startSDL();
-    string fname = wstringToString(getResourceFileName(resource));
-    return make_shared<RWOpsReader>(SDL_RWFromFile(fname.c_str(), "rb"));
+    wstring fname = getResourceFileName(resource);
+    return make_shared<FileReader>(fname);
 }
 #elif __unix
 #error implement getResourceReader for other unix
@@ -270,7 +270,7 @@ void startGraphics()
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    window = SDL_CreateWindow("Sprouts", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xResInternal, yResInternal, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("Internet Tank Controller", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xResInternal, yResInternal, SDL_WINDOW_OPENGL);
     if(window == nullptr)
     {
         cerr << "error : can't create window : " << SDL_GetError();

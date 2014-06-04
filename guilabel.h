@@ -39,4 +39,20 @@ protected:
     }
 };
 
+struct GUIDynamicLabel : public GUILabel
+{
+    GUIDynamicLabel(function<wstring()> textFn, float minX, float maxX, float minY, float maxY, Color textColor = Color::V(0))
+        : GUILabel(L"", minX, maxX, minY, maxY, textColor), textFn(textFn)
+    {
+    }
+protected:
+    virtual Mesh render(float minZ, float maxZ, bool hasFocus) override
+    {
+        text = textFn();
+        return GUILabel::render(minZ, maxZ, hasFocus);
+    }
+private:
+    function<wstring()> textFn;
+};
+
 #endif // GUILABEL_H_INCLUDED

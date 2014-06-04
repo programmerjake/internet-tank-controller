@@ -86,7 +86,7 @@ public:
     {
         return true;
     }
-    virtual bool handleMouseUp(MouseUpEvent &event)
+    virtual bool handleMouseUp(MouseUpEvent &event) override
     {
         if(event.button == MouseButton_Left)
         {
