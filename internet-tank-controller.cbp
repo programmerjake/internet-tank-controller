@@ -67,6 +67,7 @@
 		<Unit filename="platform.h" />
 		<Unit filename="png_decoder.cpp" />
 		<Unit filename="png_decoder.h" />
+		<Unit filename="serial.h" />
 		<Unit filename="stream.cpp" />
 		<Unit filename="stream.h" />
 		<Unit filename="text.cpp" />

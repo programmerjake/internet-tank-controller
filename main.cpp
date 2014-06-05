@@ -3,49 +3,62 @@
 #include <array>
 #include <chrono>
 #include <sstream>
+#include <iostream>
 #include "platform.h"
 #include "gui.h"
 #include "stream.h"
+#include "serial.h"
 
 using namespace std;
 
 array<atomic<float>, 5> outputs;
 atomic_bool done(false);
 
-void communicationThreadFn(shared_ptr<StreamRW> streams)
+void writeToStream(string str, shared_ptr<Writer> pwriter)
 {
-    Reader & reader = streams->reader();
-    Writer & writer = streams->writer();
-    writer.writeBytes((const uint8_t *)"-1\n", 3); // reset
+    for(char ch : str)
+    {
+        pwriter->writeByte((uint8_t)ch);
+        pwriter->flush();
+    }
+}
+
+void readerThreadFn(shared_ptr<Reader> preader)
+{
+    Reader & reader = *preader;
     while(!done)
     {
-        this_thread::sleep_for(chrono::milliseconds(50));
+        cout << (char)reader.readByte() << flush;
+    }
+}
+
+void communicationThreadFn(shared_ptr<StreamRW> streams)
+{
+    thread readerThread(readerThreadFn, streams->preader());
+    shared_ptr<Writer> pwriter = streams->pwriter();
+    writeToStream("  -1  -1  ", pwriter); // reset
+    while(!done)
+    {
+        this_thread::sleep_for(chrono::nanoseconds((uint64_t)floor(0.025 * 1e9)));
         ostringstream os;
         for(size_t i = 0; i < outputs.size(); i++)
         {
-            os << 1 + i << " " << limit(ifloor(0x100 * limit<float>(outputs[i], 0, 1)), 0, 0xFF) << "\n";
+            os << 1 + i << "  " << limit(ifloor(0x100 * limit<float>(outputs[i], 0, 1)), 0, 0xFF) << "  ";
         }
-        string str = os.str();
-        writer.writeBytes((const uint8_t *)str.c_str(), str.size());
+        os << "0  0  0  ";
+        writeToStream(os.str(), pwriter);
     }
-    writer.writeBytes((const uint8_t *)"-1\n", 3); // reset
+    writeToStream("-1  ", pwriter); // reset
+    readerThread.join();
 }
 
 void runMainDialog()
 {
     shared_ptr<GUIContainer> gui = make_shared<GUIContainer>(-Display::scaleX(), Display::scaleX(), -Display::scaleY(), Display::scaleY());
-    gui->add(make_shared<GUIButton>([&gui]()
+    for(int i = 0; i < (int)outputs.size(); i++)
     {
-        outputs[4] = limit(outputs[4] + 0.01f, 0.0f, 1.0f);
-    }, L"Speed Up", -0.4, 0.4, -0.5, -0.4));
-    gui->add(make_shared<GUIButton>([&gui]()
-    {
-        outputs[4] = limit(outputs[4] - 0.01f, 0.0f, 1.0f);
-    }, L"Slow Down", -0.4, 0.4, -0.6, -0.5));
-    gui->add(make_shared<GUIButton>([&gui]()
-    {
-        outputs[4] = 0;
-    }, L"Stop", -0.4, 0.4, -0.7, -0.6));
+        gui->add(make_shared<GUIScrollBar>([i]()->float{return outputs[i];}, [i](float v){outputs[i] = v;}, -0.4, 0.4, -0.09 - 0.1 * i, -0.1 * i));
+    }
     gui->add(make_shared<GUIDynamicLabel>([]()->wstring
     {
         wostringstream os;
@@ -64,12 +77,16 @@ void runMainDialog()
     runAsDialog(gui);
 }
 
-int main()
+int main(int argc, char ** argv)
 {
     for(auto & v : outputs)
         v = 0;
     wstring fileName = L"/dev/ttyUSB0";
-    shared_ptr<StreamRW> streams = make_shared<StreamRWWrapper>(make_shared<FileReader>(fileName), make_shared<FileWriter>(fileName));
+    if(argv[1])
+        fileName = stringToWString(argv[1]);
+    auto fileWriter = make_shared<SerialWriter>(fileName);
+    auto fileReader = make_shared<SerialReader>(fileName);
+    shared_ptr<StreamRW> streams = make_shared<StreamRWWrapper>(fileReader, fileWriter);
     thread communicationThread(communicationThreadFn, streams);
     startGraphics();
     runMainDialog();

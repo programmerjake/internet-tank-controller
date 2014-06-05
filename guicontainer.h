@@ -11,6 +11,7 @@ private:
     vector<shared_ptr<GUIElement>> elements;
     size_t currentFocusIndex = 0;
     size_t lastMouseElement = NoElement;
+    shared_ptr<GUIElement> getGrabbingElement();
 protected:
     static constexpr const size_t NoElement = (size_t)-1;
     virtual void onSetFocus()
@@ -155,6 +156,11 @@ private:
 public:
     virtual bool handleMouseUp(MouseUpEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleMouseUp(event);
+        }
         size_t index = getIndexFromPosition(event.x, event.y);
         if(index != lastMouseElement)
         {
@@ -176,6 +182,11 @@ public:
     }
     virtual bool handleMouseDown(MouseDownEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleMouseDown(event);
+        }
         size_t index = getIndexFromPosition(event.x, event.y);
         if(index != lastMouseElement)
         {
@@ -197,6 +208,11 @@ public:
     }
     virtual bool handleMouseMove(MouseMoveEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleMouseMove(event);
+        }
         size_t index = getIndexFromPosition(event.x, event.y);
         if(index != lastMouseElement)
         {
@@ -238,6 +254,11 @@ public:
     }
     virtual bool handleMouseScroll(MouseScrollEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleMouseScroll(event);
+        }
         size_t index = getIndexFromPosition(event.x, event.y);
         if(index != lastMouseElement)
         {
@@ -259,6 +280,11 @@ public:
     }
     virtual bool handleKeyUp(KeyUpEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleKeyUp(event);
+        }
         shared_ptr<GUIElement> e = getFocusElement();
         if(e == shared_from_this())
             return GUIElement::handleKeyUp(event);
@@ -266,6 +292,11 @@ public:
     }
     virtual bool handleKeyDown(KeyDownEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleKeyDown(event);
+        }
         shared_ptr<GUIElement> e = getFocusElement();
         bool retval;
         if(e == shared_from_this())
@@ -310,6 +341,11 @@ public:
     }
     virtual bool handleKeyPress(KeyPressEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleKeyPress(event);
+        }
         shared_ptr<GUIElement> e = getFocusElement();
         if(e == shared_from_this())
             return GUIElement::handleKeyPress(event);
@@ -317,6 +353,11 @@ public:
     }
     virtual bool handleQuit(QuitEvent &event) override final
     {
+        auto grabbingElement = getGrabbingElement();
+        if(grabbingElement)
+        {
+            return grabbingElement->handleQuit(event);
+        }
         shared_ptr<GUIElement> e = getFocusElement();
         if(e == shared_from_this())
             return GUIElement::handleQuit(event);

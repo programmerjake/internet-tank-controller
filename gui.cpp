@@ -58,5 +58,23 @@ bool GUIRunner::run()
             fn();
         }
     }
+    clearGrab();
     return runRetval;
 }
+
+shared_ptr<GUIElement> GUIContainer::getGrabbingElement()
+{
+    return GUIRunner::get(shared_from_this())->getGrabbingElement();
+}
+
+void GUIRunner::setGrabbingElement(shared_ptr<GUIElement> element)
+{
+    if(dynamic_pointer_cast<GUIContainer>(element) != nullptr)
+        element = nullptr;
+    grabbingElement = element;
+//    if(grabbingElement)
+//        Display::grabMouse(true);
+//    else
+//        Display::grabMouse(false);
+}
+
