@@ -24,3 +24,5 @@ obj
 *~
 *.layout
 *.depend
+internet-tank-controller-debug
+internet-tank-controller
